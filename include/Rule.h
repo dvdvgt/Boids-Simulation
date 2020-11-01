@@ -26,7 +26,7 @@ protected:
 public:
     Rule(const Rule &r);
 
-    //virtual std::unique_ptr<Rule> clone() = 0;
+    virtual std::unique_ptr<Rule> clone() = 0;
 
     void set_weight(float w);
 
@@ -46,9 +46,11 @@ class Cohesion : public Rule {
 public:
     Cohesion(float weight_ = 1., bool is_enabled_ = true) : Rule(sf::Color::Cyan, weight_, is_enabled_) {}
 
+    Cohesion(const Cohesion &c) : Rule(c) {}
+
     sf::Vector2f compute_force(const std::vector<Particle *> &neighbors, const Particle &particle) override;
 
-    //std::unique_ptr<Rule> clone() override;
+    std::unique_ptr<Rule> clone() override;
 };
 
 class Separation : public Rule {
@@ -58,22 +60,41 @@ public:
     Separation(float min_dist_ = 20., float weight_ = 1., bool is_enabled_ = true) :
             Rule(sf::Color::Red, weight_, is_enabled_), min_dist(min_dist_) {}
 
+    Separation(const Separation &s) : Rule(s), min_dist(s.min_dist) {}
+
     void set_min_dist(float dist);
 
     float get_min_dist() const;
 
     sf::Vector2f compute_force(const std::vector<Particle *> &neighbors, const Particle &particle) override;
 
-    //std::unique_ptr<Rule> clone() override;
+    std::unique_ptr<Rule> clone() override;
 };
 
 class Alignment : public Rule {
 public:
     Alignment(float weight_ = 1., bool is_enabled_ = true) : Rule(sf::Color::Yellow, weight_, is_enabled_) {}
 
+    Alignment(const Alignment &a) : Rule(a) {}
+
     sf::Vector2f compute_force(const std::vector<Particle *> &neighbors, const Particle &particle) override;
 
-    //std::unique_ptr<Rule> clone() override;
+    std::unique_ptr<Rule> clone() override;
+};
+
+class WindowBound : public Rule {
+private:
+    sf::Window &win;
+    int dist_threshold;
+public:
+    WindowBound(sf::Window &win_, int dist_, float weight = 10000000., bool is_enabled = true)
+    : Rule(sf::Color::Transparent, weight, is_enabled), win(win_), dist_threshold(dist_) {}
+
+    WindowBound(const WindowBound &w) : Rule(w), win(w.win), dist_threshold(w.dist_threshold) {}
+
+    sf::Vector2f compute_force(const std::vector<Particle *> &neighbors, const Particle &particle) override;
+
+    std::unique_ptr<Rule> clone() override;
 };
 
 #endif //PARTICLESYSTEM_RULE_H

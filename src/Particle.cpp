@@ -3,18 +3,20 @@
 //
 
 #include "Particle.h"
-#include "Swarm.h"
+#include "Flock.h"
 #include "Utils.h"
 #include <random>
+#include <time.h>
 
-Particle::Particle(Swarm &swarm_, int detection_radius_, float size, sf::Color color) : swarm(swarm_) {
+Particle::Particle(Flock &swarm_, int detection_radius_, float size, sf::Color color) : swarm(swarm_) {
     shape = sf::CircleShape(size, 3);
     shape.setFillColor(color);
     shape.setOrigin(shape.getRadius(), shape.getRadius());
-    shape.setPosition(200, 200);
+    set_position(sf::Vector2f());
     acceleration = sf::Vector2f();
 
     detection_radius = detection_radius_;
+    //std::srand(std::time(0));
 }
 
 void Particle::set_position(sf::Vector2f pos) {
@@ -27,40 +29,52 @@ sf::Vector2f Particle::get_position() const {
 
 void Particle::draw(sf::RenderTarget &target, sf::RenderStates states) const {
     target.draw(shape);
+    /*
+    utils::vector2::draw(
+            target, states, get_position(), acceleration, sf::Color::Red
+    );
+    utils::vector2::draw(
+            target, states, get_position(), velocity * 0.2f, sf::Color::Blue
+    );
+     */
 }
 
 void Particle::apply_force(sf::Vector2f &force) {
-    if (utils::vector2::length(force) > max_acceleration) {
-        utils::vector2::limit(force, max_acceleration);
-    }
     acceleration += force;
 }
 
 void Particle::move(const float delta) {
-    if (utils::vector2::length(acceleration) > max_acceleration) {
+    // Limit acceleration to maximum acceleration
+    if (utils::vector2::fst_length(acceleration) > max_acceleration * max_acceleration) {
         utils::vector2::limit(acceleration, max_acceleration);
     }
     velocity += acceleration;
-    if (utils::vector2::length(velocity) > max_velocity) {
+    // Reset acceleration
+    acceleration = sf::Vector2f();
+    // Adjust rotation of particle according to its direction
+    shape.setRotation(utils::vector2::angle(velocity));
+    // Adjust velocity to maximum
+    if (utils::vector2::fst_length(velocity) > max_velocity * max_velocity) {
         utils::vector2::limit(velocity, max_velocity);
     }
-    acceleration = sf::Vector2f();
     shape.move(velocity * delta);
 }
 
 void Particle::randomize(sf::Window &window) {
-    float angle = (std::rand() % 360) * 3.14f / 180.f;
-
+    // Random position within the window
     set_position(
             sf::Vector2f(
                     std::rand() % window.getSize().x,
                     std::rand() % window.getSize().y
                     )
             );
-    velocity = sf::Vector2f(std::cos(angle) * max_velocity, std::sin(angle) * max_velocity);
+    // Random direction and velocity
+    float angle = (std::rand() % 360) * 3.14f / 180.f;
+    float v = std::rand() % (int) max_velocity;
+    velocity = sf::Vector2f(std::cos(angle) * v, std::sin(angle) * v);
 }
 
-void Particle::update(const Swarm &swarm) {
+void Particle::update(const Flock &swarm) {
 
 }
 
@@ -91,8 +105,8 @@ std::vector<Particle*> Particle::find_neighbors() const {
 
     for (auto &p : swarm.particles) {
         if (&p != this) {
-            double dist = utils::vector2::dist(p.get_position(), get_position());
-            if (dist <= detection_radius) {
+            double dist = utils::vector2::fst_dist(p.get_position(), get_position());
+            if (dist <= detection_radius * detection_radius) {
                 neighbors.push_back(&p);
             }
         }

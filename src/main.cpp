@@ -1,15 +1,15 @@
 #include "SFML/Graphics.hpp"
 #include "SFML/Window.hpp"
-#include "Swarm.h"
+#include "Flock.h"
 #include <iostream>
 
 int main()
 {
     // create the window
-    sf::RenderWindow window(sf::VideoMode(1024, 512), "Particles");
+    sf::RenderWindow window(sf::VideoMode().getDesktopMode(), "Boids Simulation");
 
     // create the particle system
-    Swarm swarm(300, window);
+    Flock swarm(750, window);
 
     // create a clock to track the elapsed time
     sf::Clock clock;
@@ -23,6 +23,10 @@ int main()
         {
             if (event.type == sf::Event::Closed) {
                 window.close();
+            } else if (event.key.code == sf::Keyboard::PageUp) {
+                swarm.set_num_particles(swarm.get_num_particles() + 1);
+            } else if (event.key.code == sf::Keyboard::PageDown) {
+                swarm.set_num_particles(swarm.get_num_particles() - 1);
             }
         }
 

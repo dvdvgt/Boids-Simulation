@@ -40,7 +40,7 @@ namespace utils {
         }
 
         double fst_dist(const sf::Vector2f &v1, const sf::Vector2f &v2) {
-            return (v2.x - v1.x) + (v2.y - v1.y);
+            return (v2.x - v1.x) * (v2.x - v1.x) + (v2.y - v1.y) * (v2.y - v1.y);
         }
 
         void rotate(sf::Vector2f &v, double angle) {
@@ -59,6 +59,16 @@ namespace utils {
                 v.x *= tmp;
                 v.y *= tmp;
             }
+        }
+
+        double angle(const sf::Vector2f &v1, const sf::Vector2f &v2) {
+            double s = scalar(v1, v2);
+            double l = length(v1) * length(v2);
+            return std::acos(s / l);
+        }
+
+        double angle(const sf::Vector2f &v) {
+            return std::atan2(v.x, -v.y) * 180 / PI;
         }
 
         void draw(sf::RenderTarget &target, sf::RenderStates states, const sf::Vector2f start, const sf::Vector2f vector,

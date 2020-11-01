@@ -10,6 +10,7 @@
 #include <ostream>
 
 namespace utils {
+    const double PI = 3.141592653589793238463;
 
     namespace vector2 {
 
@@ -28,6 +29,10 @@ namespace utils {
         void rotate(sf::Vector2f &v, double angle);
 
         void limit(sf::Vector2f &v, double s);
+
+        double angle(const sf::Vector2f &v1, const sf::Vector2f &v2);
+
+        double angle(const sf::Vector2f &v);
 
         void
         draw(sf::RenderTarget &target, sf::RenderStates states, const sf::Vector2f start, const sf::Vector2f vector,
